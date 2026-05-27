@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FitCore GMS — Member Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0a;
+      --surface:   #111111;
+      --card:      #181818;
+      --border:    #2a2a2a;
+      --accent:    #e8ff00;
+      --accent2:   #ff4d00;
+      --text:      #f0f0f0;
+      --muted:     #666;
+      --success:   #00e676;
+      --danger:    #ff1744;
+      --warn:      #ff9100;
+      --radius:    10px;
+      --font-head: 'Bebas Neue', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      font-family: var(--font-head);
+      font-size: 1.9rem;
+      letter-spacing: 2px;
+      color: var(--accent);
+    }
+    .logo span { color: var(--text); }
+    .header-stats {
+      display: flex;
+      gap: 2rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .header-stats strong { color: var(--text); font-size: 1rem; display: block; }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 1300px; margin: 0 auto; padding: 2rem; }
+
+    /* ── TOOLBAR ── */
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .search-wrap {
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+    }
+    .search-wrap input {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 0.65rem 1rem 0.65rem 2.6rem;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-wrap input:focus { border-color: var(--accent); }
+    .search-wrap svg {
+      position: absolute;
+      left: 0.8rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+    select {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 0.65rem 1rem;
+      font-family: var(--font-body);
+      font-size: 0.88rem;
+      outline: none;
+      cursor: pointer;
+    }
+    select:focus { border-color: var(--accent); }
+
+    .btn {
+      padding: 0.65rem 1.4rem;
+      border-radius: var(--radius);
+      border: none;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.18s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+    }
+    .btn-primary:hover { background: #d4e800; transform: translateY(-1px); }
+    .btn-danger { background: var(--danger); color: #fff; }
+    .btn-danger:hover { background: #cc1133; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-sm { padding: 0.4rem 0.85rem; font-size: 0.8rem; }
+
+    /* ── TABLE ── */
+    .table-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    thead tr {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      padding: 0.9rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      font-size: 0.75rem;
+    }
+    td { padding: 0.9rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background 0.15s; }
+    tbody tr:hover { background: rgba(232,255,0,0.04); }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .badge-Active    { background: rgba(0,230,118,0.15); color: var(--success); }
+    .badge-Inactive  { background: rgba(102,102,102,0.2); color: var(--muted); }
+    .badge-Suspended { background: rgba(255,65,68,0.15); color: var(--danger); }
+    .badge-Basic     { background: rgba(102,102,102,0.2); color: #aaa; }
+    .badge-Standard  { background: rgba(255,145,0,0.15); color: var(--warn); }
+    .badge-Premium   { background: rgba(232,255,0,0.12); color: var(--accent); }
+
+    .action-btns { display: flex; gap: 0.5rem; }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+    }
+    .empty-state svg { margin-bottom: 1rem; opacity: 0.3; }
+    .empty-state p { font-size: 0.9rem; }
+
+    /* ── MODAL ── */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .overlay.active { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 500px;
+      transform: translateY(20px);
+      transition: transform 0.25s;
+    }
+    .overlay.active .modal { transform: translateY(0); }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    .modal-title {
+      font-family: var(--font-head);
+      font-size: 1.6rem;
+      letter-spacing: 1px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.3rem;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-group.full { grid-column: 1 / -1; }
+    label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 0.65rem 0.9rem;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      color: var(--text);
+      padding: 0.85rem 1.3rem;
+      border-radius: var(--radius);
+      font-size: 0.88rem;
+      font-weight: 500;
+      z-index: 999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(.4,0,.2,1);
+      max-width: 320px;
+    }
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.error { border-left-color: var(--danger); }
+
+    /* ── LOADING ── */
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 3rem auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 700px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .header-stats { display: none; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">FitCore <span>GMS</span></div>
+  <div class="header-stats">
+    <div><strong id="stat-total">—</strong>Total Members</div>
+    <div><strong id="stat-active">—</strong>Active</div>
+    <div><strong id="stat-premium">—</strong>Premium</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search" placeholder="Search name, email, phone…"/>
+    </div>
+    <select id="filter-plan">
+      <option value="">All Plans</option>
+      <option>Basic</option>
+      <option>Standard</option>
+      <option>Premium</option>
+    </select>
+    <select id="filter-status">
+      <option value="">All Status</option>
+      <option>Active</option>
+      <option>Inactive</option>
+      <option>Suspended</option>
+    </select>
+    <button class="btn btn-primary" onclick="openModal()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      Add Member
+    </button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Plan</th>
+          <th>Status</th>
+          <th>End Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="members-tbody">
+        <tr><td colspan="8"><div class="spinner"></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add / Edit Modal -->
+<div class="overlay" id="overlay" onclick="closeOnBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">ADD MEMBER</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Full Name</label>
+        <input type="text" id="f-name" placeholder="e.g. Juan dela Cruz"/>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="juan@email.com"/>
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="text" id="f-phone" placeholder="09171234567"/>
+      </div>
+      <div class="form-group">
+        <label>Plan</label>
+        <select id="f-plan">
+          <option>Basic</option>
+          <option>Standard</option>
+          <option>Premium</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Status</label>
+        <select id="f-status">
+          <option>Active</option>
+          <option>Inactive</option>
+          <option>Suspended</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Start Date</label>
+        <input type="date" id="f-start"/>
+      </div>
+      <div class="form-group">
+        <label>End Date</label>
+        <input type="date" id="f-end"/>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveMember()">Save Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  // ── CONFIG ── Change this to match your XAMPP path
+  const API = 'http://localhost/fitcore-gms/api/members';
+
+  let editingId = null;
+  let allMembers = [];
+
+  // ── FETCH ALL MEMBERS ──
+  async function loadMembers() {
+    const search = document.getElementById('search').value;
+    const plan   = document.getElementById('filter-plan').value;
+    const status = document.getElementById('filter-status').value;
+
+    let url = API + '?';
+    if (search) url += `search=${encodeURIComponent(search)}&`;
+    if (plan)   url += `plan=${encodeURIComponent(plan)}&`;
+    if (status) url += `status=${encodeURIComponent(status)}&`;
+
+    try {
+      const res  = await fetch(url);
+      const json = await res.json();
+      allMembers = json.data || [];
+      renderTable(allMembers);
+      updateStats(allMembers);
+    } catch (e) {
+      renderError();
+    }
+  }
+
+  function renderTable(members) {
+    const tbody = document.getElementById('members-tbody');
+    if (!members.length) {
+      tbody.innerHTML = `<tr><td colspan="8">
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <p>No members found.</p>
+        </div>
+      </td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = members.map((m, i) => `
+      <tr>
+        <td style="color:var(--muted)">${i + 1}</td>
+        <td><strong>${esc(m.full_name)}</strong></td>
+        <td style="color:var(--muted)">${esc(m.email)}</td>
+        <td>${esc(m.phone)}</td>
+        <td><span class="badge badge-${m.plan}">${m.plan}</span></td>
+        <td><span class="badge badge-${m.status}">${m.status}</span></td>
+        <td>${m.end_date}</td>
+        <td>
+          <div class="action-btns">
+            <button class="btn btn-ghost btn-sm" onclick="openEdit(${m.id})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteMember(${m.id}, '${esc(m.full_name)}')">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function renderError() {
+    document.getElementById('members-tbody').innerHTML =
+      `<tr><td colspan="8"><div class="empty-state"><p>⚠️ Could not connect to API. Make sure XAMPP is running and the API path is correct.</p></div></td></tr>`;
+  }
+
+  function updateStats(members) {
+    document.getElementById('stat-total').textContent   = members.length;
+    document.getElementById('stat-active').textContent  = members.filter(m => m.status === 'Active').length;
+    document.getElementById('stat-premium').textContent = members.filter(m => m.plan === 'Premium').length;
+  }
+
+  // ── MODAL ──
+  function openModal(id = null) {
+    editingId = id;
+    clearForm();
+    document.getElementById('modal-title').textContent = id ? 'EDIT MEMBER' : 'ADD MEMBER';
+    document.getElementById('modal-save-btn').textContent = id ? 'Update Member' : 'Save Member';
+    document.getElementById('overlay').classList.add('active');
+  }
+
+  function openEdit(id) {
+    const m = allMembers.find(x => x.id == id);
+    if (!m) return;
+    openModal(id);
+    document.getElementById('f-name').value   = m.full_name;
+    document.getElementById('f-email').value  = m.email;
+    document.getElementById('f-phone').value  = m.phone;
+    document.getElementById('f-plan').value   = m.plan;
+    document.getElementById('f-status').value = m.status;
+    document.getElementById('f-start').value  = m.start_date;
+    document.getElementById('f-end').value    = m.end_date;
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('active');
+    editingId = null;
+  }
+
+  function closeOnBackdrop(e) {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  }
+
+  function clearForm() {
+    ['f-name','f-email','f-phone','f-start','f-end'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-plan').value   = 'Basic';
+    document.getElementById('f-status').value = 'Active';
+  }
+
+  // ── CREATE / UPDATE ──
+  async function saveMember() {
+    const body = {
+      full_name:  document.getElementById('f-name').value.trim(),
+      email:      document.getElementById('f-email').value.trim(),
+      phone:      document.getElementById('f-phone').value.trim(),
+      plan:       document.getElementById('f-plan').value,
+      status:     document.getElementById('f-status').value,
+      start_date: document.getElementById('f-start').value,
+      end_date:   document.getElementById('f-end').value,
+    };
+
+    if (!body.full_name || !body.email || !body.phone || !body.start_date || !body.end_date) {
+      showToast('Please fill in all required fields.', true);
+      return;
+    }
+
+    const url    = editingId ? `${API}/${editingId}` : API;
+    const method = editingId ? 'PUT' : 'POST';
+
+    try {
+      const res  = await fetch(url, { method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      const json = await res.json();
+      if (json.success) {
+        showToast(json.message);
+        closeModal();
+        loadMembers();
+      } else {
+        showToast(json.message, true);
+      }
+    } catch (e) {
+      showToast('API request failed.', true);
+    }
+  }
+
+  // ── DELETE ──
+  async function deleteMember(id, name) {
+    if (!confirm(`Delete member "${name}"? This cannot be undone.`)) return;
+    try {
+      const res  = await fetch(`${API}/${id}`, { method: 'DELETE' });
+      const json = await res.json();
+      showToast(json.message, !json.success);
+      if (json.success) loadMembers();
+    } catch (e) {
+      showToast('Delete request failed.', true);
+    }
+  }
+
+  // ── TOAST ──
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className   = isError ? 'error' : '';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // ── UTILS ──
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ── EVENTS ──
+  let debounce;
+  document.getElementById('search').addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(loadMembers, 350);
+  });
+  document.getElementById('filter-plan').addEventListener('change', loadMembers);
+  document.getElementById('filter-status').addEventListener('change', loadMembers);
+
+  // ── INIT ──
+  loadMembers();
+</script>
+</body>
+</html>
