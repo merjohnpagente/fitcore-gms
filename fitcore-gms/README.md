@@ -106,6 +106,6 @@ Base URL: `http://localhost/fitcore-gms/api/members`
 ---
 
 ## Developer
-**[Your Name]**  
+**MERJOHN PAGENTE**  
 Institute of Computer Studies — Tangub City Global College
 "# fitcore-gms" 
