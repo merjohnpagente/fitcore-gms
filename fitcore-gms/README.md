@@ -72,8 +72,8 @@ Base URL: `http://localhost/fitcore-gms/api/members`
 ### Sample POST/PUT body (JSON)
 ```json
 {
-  "full_name":  "Juan dela Cruz",
-  "email":      "juan@email.com",
+  "full_name":  "Merjohn Pagente",
+  "email":      "Merjohn@email.com",
   "phone":      "09171234567",
   "plan":       "Premium",
   "status":     "Active",
